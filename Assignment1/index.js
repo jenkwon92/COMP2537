@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -14,18 +15,17 @@ const expireTime = 24 * 60 * 60 * 1000; //expires after 1 day (hours * minutes *
 var users = []; 
 
 /* secret information section */
-const mongodb_user = "";
-const mongodb_password = "!";
-const mongodb_session_secret = "";
+const mongodb_user = process.env.MONGODB_USER;
+const mongodb_password = process.env.MONGODB_PASSWORD;
+const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 
-const node_session_secret = "";
+const node_session_secret = process.env.NODE_SESSION_SECRET;
 /* END secret section */
 
 app.use(express.urlencoded({extended: false}));
 
 var mongoStore = MongoStore.create({
-	// mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@cluster0.fuu9a.mongodb.net/sessions`,
-   
+	mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@cluster0.3lizggb.mongodb.net/sessions`,
     crypto: {
 		secret: mongodb_session_secret
 	}
