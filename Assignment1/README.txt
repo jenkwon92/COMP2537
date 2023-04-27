@@ -1,3 +1,22 @@
+v1.3 - Form fields and POSTs
+============================
+How do we handle the text input when the user presses the submit button?
+
+In this version we've created a page at /contact and it will
+prompt for an email address. When you click on the button, it will
+go to /submitEmail and acknowledge the email you entered.
+If you didn't enter an email address, it will redirect you back
+to /contact with a query parameter that will say the email address is required
+
+- To test:
+open browser at: http://localhost:3000/contact
+try to hit the submit button (without an email address)
+it should redirect to http://localhost:3000/contact?missing=1 
+which will show an additional message about the email being required.
+This time, put in an email address (ex: a@b.ca) and it will post you email to
+http://localhost:3000/submitEmail and echo your email
+
+
 v1.2 - Catch All and 404s
 =========================
 What happens if we go to a page that doesn't exist?
@@ -12,6 +31,7 @@ open browser at: https://localhost:3000/does_not_exist
 Should not say "Page not found - 404"
 (also sends status 404)
 Any route (page) not specified before the catch all will give a 404.
+
 
 v1.1 - Simple Website playing with routes and URL and query params
 ==================================================================
@@ -50,6 +70,7 @@ Image Credits:
 "cat1" home
 "cat2" home
 "cat3" home
+
 
 v1.0 - Simple Website using Node.js
 ===================================
