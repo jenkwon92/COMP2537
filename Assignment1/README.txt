@@ -1,3 +1,7 @@
+v2.0 - 
+- Follow along instructions:
+npm install joi
+
 v1.9 - Keeping secrets, secret with dotenv
 ==========================================
 It's time we separate our passwords and secret keys from our code.
