@@ -41,96 +41,38 @@ var mongoStore = MongoStore.create({
 })
 
 app.use(session({ 
-    secret: node_session_secret,
+    secret: node_session_secret, //key that will sign cookie
 	store: mongoStore, //default is memory store 
-	saveUninitialized: false, 
-	resave: true
+	saveUninitialized: true,  //not touched, modify the session, we don't want to save
+	resave: true //
 }
 ));
 
+//authentication - distinguish whether the user logged in or not.
 app.get('/', (req,res) => {
-    res.send("<h1>Hello World!</h1>");
-});
-
-app.get('/nosql-injection', async (req,res) => {
-	var username = req.query.user;
-
-	if (!username) {
-		res.send(`<h3>no user provided - try /nosql-injection?user=name</h3> <h3>or /nosql-injection?user[$ne]=name</h3>`);
-		return;
-	}
-	console.log("user: "+username);
-
-	const schema = Joi.string().max(20).required();
-	const validationResult = schema.validate(username);
-
-	//If we didn't use Joi to validate and check for a valid URL parameter below
-	// we could run our userCollection.find and it would be possible to attack.
-	// A URL parameter of user[$ne]=name would get executed as a MongoDB command
-	// and may result in revealing information about all users or a successful
-	// login without knowing the correct password.
-	if (validationResult.error != null) {  
-	   console.log(validationResult.error);
-	   res.send("<h1 style='color:darkred;'>A NoSQL injection attack was detected!!</h1>");
-	   return;
-	}	
-
-	const result = await userCollection.find({username: username}).project({username: 1, password: 1, _id: 1}).toArray();
-
-	console.log(result);
-
-    res.send(`<h1>Hello ${username}</h1>`);
-});
-
-app.get('/about', (req,res) => {
-    var color = req.query.color;
-
-    res.send("<h1 style='color:"+color+";'>Yongeun Kwon</h1>");
-});
-
-app.get('/contact', (req,res) => {
-    var missingEmail = req.query.missing;
-    var html = `
-        email address:
-        <form action='/submitEmail' method='post'>
-            <input name='email' type='text' placeholder='email'>
-            <button>Submit</button>
-        </form>
-    `;
-    if (missingEmail) {
-        html += "<br> email is required";
-    }
-    res.send(html);
-});
-
-app.post('/submitEmail', (req,res) => {
-    var email = req.body.email;
-    if (!email) {
-        res.redirect('/contact?missing=1');
-    }
-    else {
-        res.send("Thanks for subscribing with your email: "+email);
+    if(req.session.authenticated){
+        const buttons = `
+        <button onclick="window.location.href='/members'">Go to Members Area</button><br>
+        <button onclick="window.location.href='/logout'">Log out</button>
+        `;
+    res.send(`<h1>Hello, ${req.session.name}!</h1>${buttons}`);
+    } else {
+        const buttons = `
+        <button onclick="window.location.href='/signup'">Sign up</button><br>
+        <button onclick="window.location.href='/login'">Log in</button>
+        `;
+        res.send(buttons);
     }
 });
 
-app.get('/createUser', (req,res) => {
+//Sign up function
+app.get('/signup', (req,res) => {
     var html = `
     create user
     <form action='/submitUser' method='post'>
-    <input name='username' type='text' placeholder='username'>
-    <input name='password' type='password' placeholder='password'>
-    <button>Submit</button>
-    </form>
-    `;
-    res.send(html);
-});
-
-app.get('/login', (req,res) => {
-    var html = `
-    log in
-    <form action='/loggingin' method='post'>
-    <input name='username' type='text' placeholder='username'>
-    <input name='password' type='password' placeholder='password'>
+    <input name='name' type='text' placeholder='name'><br>
+    <input name='email' type='email' placeholder='email'><br>
+    <input name='password' type='password' placeholder='password'><br>
     <button>Submit</button>
     </form>
     `;
@@ -138,56 +80,85 @@ app.get('/login', (req,res) => {
 });
 
 app.post('/submitUser', async (req,res) => {
-    var username = req.body.username;
+    var name = req.body.name;
+    var email = req.body.email;
     var password = req.body.password;
 
     const schema = Joi.object(
 		{
-			username: Joi.string().alphanum().max(20).required(),
+			name: Joi.string().alphanum().max(20).required(),
+            email:Joi.string().email().required(),
 			password: Joi.string().max(20).required()
 		});
 
-	const validationResult = schema.validate({username, password});
+	const validationResult = schema.validate({name, email, password});
 	if (validationResult.error != null) {
-	   console.log(validationResult.error);
-	   res.redirect("/createUser");
-	   return;
-   }
+        const errors = [];
+        if(validationResult.value.name === ''){
+            errors.push('name');
+        }
+        if(validationResult.value.email === ''){
+            errors.push('email');
+        }
+        if(validationResult.value.password === ''){
+            errors.push('password');
+        }
+        const errorMessage = errors.join(', ');
 
-    var hashedPassword = await bcrypt.hash(password, saltRounds);
+        var html= `
+            ${errorMessage}
+            is required.<br><br>
+            <a href='/signup'>Try again</a>
+        `;
+        res.send(html);
+    }else{
+        var hashedPassword = await bcrypt.hash(password, saltRounds);
 
-	await userCollection.insertOne({username: username, password: hashedPassword});
-	console.log("Inserted user");
+        await userCollection.insertOne({name: name, email: email, password: hashedPassword});
+        req.session.authenticated = true;
+        req.session.name = name;
+        res.redirect('/');
+    }
+});
 
-    var html = "successfully created user";
+app.get('/login', (req,res) => {
+    var html = `
+    log in
+    <form action='/loggingin' method='post'>
+    <input name='email' type='email' placeholder='email'><br>
+    <input name='password' type='password' placeholder='password'><br>
+    <button>Submit</button>
+    </form>
+    `;
     res.send(html);
 });
 
 app.post('/loggingin', async(req,res) => {
-    var username = req.body.username;
+    var email = req.body.email;
     var password = req.body.password;
 
 
-    const schema = Joi.string().max(20).required();
-	const validationResult = schema.validate(username);
+    const schema = Joi.string().max(25).required();
+	const validationResult = schema.validate(email);
 	if (validationResult.error != null) {
 	   console.log(validationResult.error);
 	   res.redirect("/login");
 	   return;
 	}
 
-	const result = await userCollection.find({username: username}).project({username: 1, password: 1, _id: 1}).toArray();
+	const result = await userCollection.find({email: email}).project({name: 1,email: 1, password: 1, _id: 1}).toArray();
 
 	console.log(result);
 	if (result.length != 1) {
 		console.log("user not found");
-		res.redirect("/login");
+        res.send(`User not found. Please <a href="/login">try again</a>.`);
 		return;
 	}
 	if (await bcrypt.compare(password, result[0].password)) {
 		console.log("correct password");
 		req.session.authenticated = true;
-		req.session.username = username;
+		req.session.email = email;
+        req.session.name = result[0].name;
 		req.session.cookie.maxAge = expireTime;
 
 		res.redirect('/loggedIn');
@@ -195,42 +166,46 @@ app.post('/loggingin', async(req,res) => {
 	}
 	else {
 		console.log("incorrect password");
-		res.redirect("/login");
+        res.send(`Incorrect password. Please <a href="/login">try again</a>.`);
 		return;
 	}
 });
 
-app.get('/loggedin', (req,res) => {
+app.get("/loggedin", (req, res) => {
     if (!req.session.authenticated) {
-        res.redirect('/login');
+        res.redirect("/login");
+    } else {
+        res.redirect("/members");
     }
-    var html = `
-    You are logged in!
+});
+
+const imageURL = [
+    "cat1.jpg",
+    "cat2.jpg",
+    "cat3.jpg"
+];
+
+app.get('/members', (req,res) => {
+    if (!req.session.name) {
+        res.redirect("/");
+        return;
+    }
+    
+    const name = req.session.name;
+    const image = imageURL[Math.floor(Math.random() * imageURL.length)];
+    
+    const html = `
+        <h1>Hello, ${name}!</h1>
+        <img src="/${image}" alt="Random image" style="width:500px">
+        <br>
+        <button onclick="window.location.href='/logout'">Log out</button>
     `;
     res.send(html);
 });
 
 app.get('/logout', (req,res) => {
 	req.session.destroy();
-    var html = `
-    You are logged out.
-    `;
-    res.send(html);
-});
-
-app.get('/cat/:id', (req,res) => {
-
-    var cat = req.params.id;
-
-    if (cat == 1) {
-        res.send("Yallu1: <img src='/cat1.jpg' style='width:250px;'>");
-    }
-    else if (cat == 2) {
-        res.send("Yallu2: <img src='/cat2.jpg' style='width:250px;'>");
-    }
-    else {
-        res.send("Invalid cat id: "+cat);
-    }
+    res.redirect('/');
 });
 
 app.use(express.static(__dirname + "/public"));
