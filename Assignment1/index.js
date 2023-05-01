@@ -69,7 +69,7 @@ app.get('/', (req,res) => {
 app.get('/signup', (req,res) => {
     var html = `
     create user
-    <form action='/submitUser' method='post'>
+    <form action='/signupSubmit' method='post'>
     <input name='name' type='text' placeholder='name'><br>
     <input name='email' type='email' placeholder='email'><br>
     <input name='password' type='password' placeholder='password'><br>
@@ -79,7 +79,7 @@ app.get('/signup', (req,res) => {
     res.send(html);
 });
 
-app.post('/submitUser', async (req,res) => {
+app.post('/signupSubmit', async (req,res) => {
     var name = req.body.name;
     var email = req.body.email;
     var password = req.body.password;
@@ -117,7 +117,7 @@ app.post('/submitUser', async (req,res) => {
         await userCollection.insertOne({name: name, email: email, password: hashedPassword});
         req.session.authenticated = true;
         req.session.name = name;
-        res.redirect('/');
+        res.redirect('/members');
     }
 });
 
