@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000;
 const app = express();
 const Joi = require("joi");
 
-const expireTime = 24 * 60 * 60 * 1000; //expires after 1 day (hours * minutes * seconds * millis)
+const expireTime = 60 * 60 * 1000; //expires after 1 hour (minutes * seconds * millis)
 
 //Users and Passwords (in memory 'database')
 var users = []; 
@@ -43,10 +43,10 @@ var mongoStore = MongoStore.create({
 app.use(session({ 
     secret: node_session_secret, //key that will sign cookie
 	store: mongoStore, //default is memory store 
-	saveUninitialized: true,  //not touched, modify the session, we don't want to save
-	resave: true //
-}
-));
+	saveUninitialized: false,  //not touched, modify the session, we don't want to save
+	resave: true
+    })
+);
 
 //authentication - distinguish whether the user logged in or not.
 app.get('/', (req,res) => {
