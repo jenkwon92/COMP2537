@@ -84,34 +84,25 @@ app.post('/signupSubmit', async (req,res) => {
     var email = req.body.email;
     var password = req.body.password;
 
-    const schema = Joi.object(
-		{
-			name: Joi.string().alphanum().max(20).required(),
-            email:Joi.string().email().required(),
-			password: Joi.string().max(20).required()
-		});
-
-	const validationResult = schema.validate({name, email, password});
-	if (validationResult.error != null) {
-        const errors = [];
-        if(validationResult.value.name === ''){
-            errors.push('name');
-        }
-        if(validationResult.value.email === ''){
-            errors.push('email');
-        }
-        if(validationResult.value.password === ''){
-            errors.push('password');
-        }
-        const errorMessage = errors.join(', ');
-
-        var html= `
-            ${errorMessage}
-            is required.<br><br>
-            <a href='/signup'>Try again</a>
-        `;
-        res.send(html);
+    if (!name || !email || !password) {
+        res.send(`All fields are required. <br><br>Please <a href='/signup'>try again</a>`);
+        return;
     }
+
+    const schema = Joi.object({
+        name: Joi.string().alphanum().max(20).required(),
+        password: Joi.string().max(20).required(),
+        email: Joi.string().email().required(),
+    });
+
+    const validationResult = schema.validate({ name, password, email });
+    if (validationResult.error != null) {
+        console.log(validationResult.error);
+        var errorMessage = validationResult.error.details[0].message;
+        res.send(`Error: ${errorMessage}. <br><br> Please <a href="/signup">try again</a>.`);
+        return;
+    }
+
     var hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await userCollection.insertOne({
@@ -144,38 +135,40 @@ app.post('/loggingin', async(req,res) => {
     var email = req.body.email;
     var password = req.body.password;
 
-
     const schema = Joi.string().max(20).required();
-	const validationResult = schema.validate(email);
-	if (validationResult.error != null) {
+    const validationResult = schema.validate(email);
+    if (validationResult.error != null) {
         console.log(validationResult.error);
+        res.send(`Please fill out both email and password fields. <br><br> Please <a href='/login'>try again</a>.`);
+        return;
+    }
+
+    const result = await userCollection
+        .find({ email: email })
+        .project({ username: 1, password: 1, _id: 1 })
+        .toArray();
+
+    console.log(result);
+    if (result.length === 0) {
+        res.send('Invalid email/password. <br><br> Please <a href="/login">try again</a>.');
+        return;
+    } else if (result.length != 1) {
         res.redirect("/login");
         return;
-	}
+    }
+    if (await bcrypt.compare(password, result[0].password)) {
+        console.log("correct password");
+        req.session.authenticated = true;
+        req.session.email = email;
+        req.session.username = result[0].username;
+        req.session.cookie.maxAge = expireTime;
 
-	const result = await userCollection.find({email: email}).project({name: 1,email: 1, password: 1, _id: 1}).toArray();
-
-	console.log(result);
-	if (result.length != 1) {
-		console.log("user not found");
-        res.send(`User not found. Please <a href="/login">try again</a>.`);
-		return;
-	}
-	if (await bcrypt.compare(password, result[0].password)) {
-		console.log("correct password");
-		req.session.authenticated = true;
-		req.session.email = email;
-        req.session.name = result[0].name;
-		req.session.cookie.maxAge = expireTime;
-
-		res.redirect('/loggedIn');
-		return;
-	}
-	else {
-		console.log("incorrect password");
-        res.send(`Incorrect password. Please <a href="/login">try again</a>.`);
-		return;
-	}
+        res.redirect("/loggedin");
+        return;
+    } else {
+        res.send('Invalid email/password. <br><br> Please <a href="/login">try again</a>.');
+        return;
+    }
 });
 
 app.get("/loggedin", (req, res) => {
@@ -224,7 +217,7 @@ const imageURL = [
 
 app.get('/members', (req,res) => {
     if (!req.session.name) {
-        res.redirect("/");
+        res.redirect("/login");
         return;
     }
     
