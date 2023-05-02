@@ -123,6 +123,7 @@ app.post('/signupSubmit', async (req,res) => {
 
     req.session.authenticated = true;
     req.session.name = name;
+    req.session.cookie.maxAge = expireTime;
 
     res.redirect("/members");
 });
