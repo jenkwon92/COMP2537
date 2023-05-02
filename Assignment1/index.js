@@ -111,14 +111,20 @@ app.post('/signupSubmit', async (req,res) => {
             <a href='/signup'>Try again</a>
         `;
         res.send(html);
-    }else{
-        var hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        await userCollection.insertOne({name: name, email: email, password: hashedPassword});
-        req.session.authenticated = true;
-        req.session.name = name;
-        res.redirect('/members');
     }
+    var hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    await userCollection.insertOne({
+        name: name,
+        password: hashedPassword,
+        email: email,
+    });
+    console.log("Inserted user");
+
+    req.session.authenticated = true;
+    req.session.name = name;
+
+    res.redirect("/members");
 });
 
 app.get('/login', (req,res) => {
