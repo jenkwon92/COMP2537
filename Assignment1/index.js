@@ -145,7 +145,7 @@ app.post('/loggingin', async(req,res) => {
 
     const result = await userCollection
         .find({ email: email })
-        .project({ username: 1, password: 1, _id: 1 })
+        .project({ name: 1, password: 1, _id: 1 })
         .toArray();
 
     console.log(result);
@@ -160,7 +160,7 @@ app.post('/loggingin', async(req,res) => {
         console.log("correct password");
         req.session.authenticated = true;
         req.session.email = email;
-        req.session.username = result[0].username;
+        req.session.name = result[0].name;
         req.session.cookie.maxAge = expireTime;
 
         res.redirect("/loggedin");
