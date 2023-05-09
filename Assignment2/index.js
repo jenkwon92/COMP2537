@@ -136,13 +136,13 @@ app.post('/submit', async (req, res) => {
 	var email = req.body.email;
 	var password = req.body.password;
 
-	if (!email) {
-		res.render('signupError', { error: 'Email' });
-	}
-	if (!username) {
+	if(!username) {
 		res.render('signupError', { error: 'Username' });
 	}
-	if (!password) {
+	else if(!email) {
+		res.render('signupError', { error: 'Email' });
+	}
+	else if(!password) {
 		res.render('signupError', { error: 'Password' });
 	}
 
