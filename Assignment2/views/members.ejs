@@ -1,0 +1,25 @@
+<%- include("templates/header") %>
+
+<div>
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <h1 class="text-center mb-5">Hello, <%= username %>!</h1>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <img src="cat1.jpg" alt="cat1" class="img-fluid">
+        </div>
+        <div class="col-md-4 mb-3">
+          <img src="cat2.jpg" alt="cat2" class="img-fluid">
+        </div>
+        <div class="col-md-4 mb-3">
+          <img src="cat3.jpg" alt="cat3" class="img-fluid">
+        </div>
+      </div>
+      <form action="/logout" method="get" class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mt-3">Log out</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include("templates/footer") %>
