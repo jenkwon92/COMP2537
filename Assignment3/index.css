@@ -2,9 +2,9 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-}
-
-.pokeCard {
+  }
+  
+  .pokeCard {
     width: 200px;
     height: 200px;
     margin: 10px;
@@ -15,9 +15,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-}
-
-.modal img {
+  }
+  
+  .modal img {
     width: 100%;
     height: 100%;
-}
+  }
