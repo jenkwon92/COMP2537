@@ -2,16 +2,84 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assignment4</title>
+    <!-- import bootstrap css -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <!-- import jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- import bootstrap js -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="index.js"></script>
 </head>
 
 <body>
+    <div class="container">
+        <h4 class="display-4">Pokemon Game</h4>
 
+        <div class="game_options">
+            <label for="difficultySelect">Difficulty:</label>
+            <select id="difficultySelect">
+                <option value="easy">Easy</option>
+                <option value="normal">Normal</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+        <div class="game_options">
+            <button id="startButton">Start Game</button>
+            <button id="resetButton">Reset Game</button>
+        </div>
+        <div id="game_stats">
+            <p id="totalPairs"></p>
+            <p id="foundPairs"></p>
+            <p id="remainingPairs"></p>
+            <p id="flipCount"></p>
+            <p id="timer"></p>
+            <p id="score"></p>
+            <button id="chanceTimeButton">Power Up!</button>
+        </div>
+
+        <div id="game_grid"></div>
+
+        <div id="themeButtons" class="d-flex justify-content-center btn-group">
+            <button id="btnLight">Light</button>
+            <button id="btnDark">Dark</button>
+            <button id="btnSpeed">Speed</button>
+        </div>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            document.body.classList.remove('light-theme', 'dark-theme', 'speed-theme');
+            document.getElementById('game_grid').classList.remove('light-theme', 'dark-theme', 'speed-theme');
+
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('game_grid').classList.add('light-theme');
+            } else if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('game_grid').classList.add('dark-theme');
+            } else if (theme === 'speed') {
+                document.body.classList.add('speed-theme');
+                document.getElementById('game_grid').classList.add('speed-theme');
+            }
+        }
+
+        document.getElementById('btnLight').onclick = function () {
+            setTheme('light');
+        };
+
+        document.getElementById('btnDark').onclick = function () {
+            setTheme('dark');
+        };
+
+        document.getElementById('btnSpeed').onclick = function () {
+            setTheme('speed');
+        };
+    </script>
 </body>
 
 </html>
