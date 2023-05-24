@@ -1,10 +1,10 @@
-let timerID = null; // Variable to store the timer interval ID
-let matchedCount = 0; // Counter for the number of matched pairs
-let flipCount = 0; // Counter for the number of card flips
-let cardCount = 0; // Total number of cards
-let score = 0; // Player's score
-let isChanceTime = false; // Flag to indicate if chance time is active
-let timeLimit; // Time limit for the game
+let timerID = null;             // Variable to store the timer interval ID
+let matchedCount = 0;           // Counter for the number of matched pairs
+let flipCount = 0;              // Counter for the number of card flips
+let cardCount = 0;              // Total number of cards
+let score = 0;                  // Player's score
+let isChanceTime = false;       // Flag to indicate if chance time is active
+let timeLimit;                  // Time limit for the game
 
 // Function to update the game statistics on the page
 const updateStats = () => {
@@ -51,7 +51,7 @@ const startTimer = () => {
 
 		if (seconds >= timeLimit) {
 			clearInterval(timerID);
-			alert('Time is up! Your score is ' + score + '. If you want to finish the game, please click OK.');
+			alert('Time is up! Your score is ' + score + '.');
 		}
 	}, 1000);
 };
@@ -175,7 +175,7 @@ const startGame = () => {
 				if (matchedCount === cardCount / 2) {
 					clearInterval(timerID);
 					setTimeout(() => {
-						alert('Congratulations! You completed the game.');
+						alert('Congratulations! You win.');
 					}, 500);
 				}
 
